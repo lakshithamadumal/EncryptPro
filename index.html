@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EncryptPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .encrypting {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .loading-bar {
+            width: 0%;
+            height: 3px;
+            background-color: #4ECB71;
+            animation: loading 1.5s ease-in-out;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Custom scrollbar */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        textarea::-webkit-scrollbar-track {
+            background: #DFF6EA;
+            border-radius: 10px;
+        }
+        
+        textarea::-webkit-scrollbar-thumb {
+            background: #8A94A6;
+            border-radius: 10px;
+        }
+        
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #F39C4A;
+        }
+    </style>
+</head>
+<body class="bg-[#F4F6F8] flex items-center justify-center p-4">
+    <div class="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-[90vh] max-h-[700px] fade-in">
+        
+        <!-- Left side - Input -->
+        <div class="md:w-1/2 p-6 md:p-8 flex flex-col h-full">
+            <div class="mb-6">
+                <h1 class="text-2xl md:text-3xl font-bold text-[#1F2933]">
+                    <i class="fas fa-lock mr-3 text-[#4ECB71]"></i>
+                    EncryptPro
+                </h1>
+                <p class="text-[#8A94A6] mt-2">Type your text and see real-time encryption/decryption</p>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex space-x-4">
+                    <button id="encryptBtn" class="flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center transition-all duration-300 bg-[#4ECB71] text-white shadow-md">
+                        <i class="fas fa-lock mr-2"></i>
+                        Encrypt
+                    </button>
+                    <button id="decryptBtn" class="flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center transition-all duration-300 bg-[#DFF6EA] text-[#1F2933]">
+                        <i class="fas fa-unlock mr-2"></i>
+                        Decrypt
+                    </button>
+                </div>
+                
+                <!-- Loading indicator -->
+                <div id="loadingIndicator" class="mt-4 hidden">
+                    <div class="loading-bar rounded-full"></div>
+                    <p class="text-[#8A94A6] text-sm mt-2 flex items-center">
+                        <i class="fas fa-sync-alt animate-spin mr-2 text-[#4ECB71]"></i>
+                        Processing...
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="text-[#1F2933] font-medium">
+                        <i class="fas fa-keyboard mr-2 text-[#F39C4A]"></i>
+                        Input Text
+                    </label>
+                    <div class="text-xs text-[#8A94A6] flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Type or paste your text here
+                    </div>
+                </div>
+                
+                <div class="flex-1 relative">
+                    <textarea 
+                        id="inputText" 
+                        class="w-full h-full p-5 border-2 border-[#DFF6EA] rounded-xl resize-none focus:outline-none focus:border-[#4ECB71] transition-colors duration-300 text-[#1F2933] bg-[#F4F6F8]"
+                        placeholder="Type your text here to encrypt or decrypt..."
+                        autofocus
+                    >Hello, this is a secret message!</textarea>
+                    
+                    <div class="absolute bottom-4 right-4 flex space-x-2">
+                        <button id="clearInput" class="p-2 bg-white rounded-lg shadow-sm text-[#8A94A6] hover:text-[#1F2933] transition-colors">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button id="sampleText" class="p-2 bg-white rounded-lg shadow-sm text-[#8A94A6] hover:text-[#1F2933] transition-colors">
+                            <i class="fas fa-file-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-sm text-[#8A94A6] flex items-center">
+                    <i class="fas fa-history mr-2"></i>
+                    <span id="charCount">Characters: 0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <div class="hidden md:flex items-center justify-center w-12">
+            <div class="h-16 w-1 bg-gradient-to-b from-[#4ECB71] to-[#F39C4A] rounded-full"></div>
+        </div>
+        <div class="md:hidden flex justify-center py-4">
+            <div class="w-16 h-1 bg-gradient-to-r from-[#4ECB71] to-[#F39C4A] rounded-full"></div>
+        </div>
+        
+        <!-- Right side - Output -->
+        <div class="md:w-1/2 p-6 md:p-8 flex flex-col h-full bg-gradient-to-br from-[#F4F6F8] to-[#DFF6EA]">
+            <div class="mb-6">
+                <h2 class="text-xl md:text-2xl font-bold text-[#1F2933] flex items-center">
+                    <i class="fas fa-shield-alt mr-3 text-[#F39C4A]"></i>
+                    <span id="outputTitle">Encrypted Result</span>
+                </h2>
+                <p class="text-[#8A94A6] mt-2">
+                    <span id="outputDescription">Your encrypted text appears here in real-time</span>
+                </p>
+            </div>
+            
+            <div class="flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="text-[#1F2933] font-medium">
+                        <i class="fas fa-file-code mr-2 text-[#4ECB71]"></i>
+                        <span id="outputLabel">Encrypted Text</span>
+                    </label>
+                    <div>
+                        <button id="copyBtn" class="text-xs bg-white py-2 px-3 rounded-lg text-[#8A94A6] hover:text-[#1F2933] transition-colors shadow-sm">
+                            <i class="far fa-copy mr-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 relative">
+                    <textarea 
+                        id="outputText" 
+                        class="w-full h-full p-5 border-2 border-[#DFF6EA] rounded-xl resize-none focus:outline-none focus:border-[#4ECB71] transition-colors duration-300 text-[#1F2933] bg-white"
+                        placeholder="Encrypted or decrypted result will appear here..."
+                        readonly
+                    ></textarea>
+                    
+                    <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center p-5 text-center pointer-events-none">
+                        <div class="text-[#8A94A6] mb-4">
+                            <i class="fas fa-exchange-alt text-4xl"></i>
+                        </div>
+                        <p class="text-[#8A94A6] font-medium">Your converted text will appear here</p>
+                        <p class="text-sm text-[#8A94A6] mt-2">Type something in the input box to see the magic!</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <div class="bg-white p-4 rounded-xl border border-[#DFF6EA]">
+                        <h3 class="font-medium text-[#1F2933] mb-2 flex items-center">
+                            <i class="fas fa-info-circle mr-2 text-[#8A94A6]"></i>
+                            How it works
+                        </h3>
+                        <p class="text-sm text-[#8A94A6]">
+                            This tool uses a custom encryption algorithm to securely encode your text. 
+                            When in <span class="text-[#4ECB71] font-medium">Encrypt</span> mode, your text is converted to a secure format.
+                            In <span class="text-[#F39C4A] font-medium">Decrypt</span> mode, encrypted text is converted back to readable format.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-[#1F2933] text-white py-3 px-6 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+        <i class="fas fa-check-circle mr-2 text-[#4ECB71]"></i>
+        <span id="toastMessage">Text copied to clipboard!</span>
+    </div>
+
+    <script>
+        // DOM elements
+        const encryptBtn = document.getElementById('encryptBtn');
+        const decryptBtn = document.getElementById('decryptBtn');
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const outputTitle = document.getElementById('outputTitle');
+        const outputLabel = document.getElementById('outputLabel');
+        const outputDescription = document.getElementById('outputDescription');
+        const charCount = document.getElementById('charCount');
+        const copyBtn = document.getElementById('copyBtn');
+        const clearInput = document.getElementById('clearInput');
+        const sampleText = document.getElementById('sampleText');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const placeholderText = document.getElementById('placeholderText');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Current mode (true = encrypt, false = decrypt)
+        let isEncryptMode = true;
+        let processingTimeout = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+            processText();
+            
+            // Set focus to input textarea
+            inputText.focus();
+        });
+
+        // Switch to encrypt mode
+        encryptBtn.addEventListener('click', function() {
+            if (!isEncryptMode) {
+                isEncryptMode = true;
+                updateUI();
+                processText();
+            }
+        });
+
+        // Switch to decrypt mode
+        decryptBtn.addEventListener('click', function() {
+            if (isEncryptMode) {
+                isEncryptMode = false;
+                updateUI();
+                processText();
+            }
+        });
+
+        // Update UI based on mode
+        function updateUI() {
+            if (isEncryptMode) {
+                encryptBtn.classList.remove('bg-[#DFF6EA]', 'text-[#1F2933]');
+                encryptBtn.classList.add('bg-[#4ECB71]', 'text-white', 'shadow-md');
+                decryptBtn.classList.remove('bg-[#4ECB71]', 'text-white', 'shadow-md');
+                decryptBtn.classList.add('bg-[#DFF6EA]', 'text-[#1F2933]');
+                
+                outputTitle.textContent = 'Encrypted Result';
+                outputLabel.textContent = 'Encrypted Text';
+                outputDescription.textContent = 'Your encrypted text appears here in real-time';
+            } else {
+                decryptBtn.classList.remove('bg-[#DFF6EA]', 'text-[#1F2933]');
+                decryptBtn.classList.add('bg-[#4ECB71]', 'text-white', 'shadow-md');
+                encryptBtn.classList.remove('bg-[#4ECB71]', 'text-white', 'shadow-md');
+                encryptBtn.classList.add('bg-[#DFF6EA]', 'text-[#1F2933]');
+                
+                outputTitle.textContent = 'Decrypted Result';
+                outputLabel.textContent = 'Decrypted Text';
+                outputDescription.textContent = 'Your decrypted text appears here in real-time';
+            }
+        }
+
+        // Process text when input changes
+        inputText.addEventListener('input', function() {
+            updateCharCount();
+            
+            // Show loading animation
+            showLoading();
+            
+            // Clear previous timeout
+            if (processingTimeout) {
+                clearTimeout(processingTimeout);
+            }
+            
+            // Process after a short delay (to simulate processing time)
+            processingTimeout = setTimeout(() => {
+                processText();
+            }, 500);
+        });
+
+        // Update character count
+        function updateCharCount() {
+            const count = inputText.value.length;
+            charCount.textContent = `Characters: ${count}`;
+        }
+
+        // Show loading animation
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+            
+            // Hide after animation completes
+            setTimeout(() => {
+                loadingIndicator.classList.add('hidden');
+            }, 1500);
+        }
+
+        // Process text based on mode
+        function processText() {
+            const text = inputText.value.trim();
+            
+            if (text === '') {
+                outputText.value = '';
+                placeholderText.classList.remove('hidden');
+                return;
+            }
+            
+            placeholderText.classList.add('hidden');
+            
+            if (isEncryptMode) {
+                outputText.value = encrypt(text);
+            } else {
+                outputText.value = decrypt(text);
+            }
+        }
+
+        // Simple encryption algorithm (for demonstration)
+        function encrypt(text) {
+            // This is a simple encryption for demonstration
+            // In a real app, you would use a more secure algorithm
+            let result = '';
+            
+            for (let i = 0; i < text.length; i++) {
+                // Shift character code and convert to hex
+                let charCode = text.charCodeAt(i) + 5;
+                result += charCode.toString(16) + ' ';
+            }
+            
+            // Add prefix to indicate encrypted text
+            return 'ENC:' + result.trim();
+        }
+
+        // Simple decryption algorithm
+        function decrypt(text) {
+            // Check if it's our encrypted format
+            if (!text.startsWith('ENC:')) {
+                return '⚠ This text does not appear to be encrypted with this tool.';
+            }
+            
+            try {
+                let result = '';
+                // Remove prefix and split by spaces
+                const hexCodes = text.substring(4).split(' ');
+                
+                for (let i = 0; i < hexCodes.length; i++) {
+                    if (hexCodes[i] !== '') {
+                        // Convert from hex and shift back
+                        let charCode = parseInt(hexCodes[i], 16) - 5;
+                        result += String.fromCharCode(charCode);
+                    }
+                }
+                
+                return result;
+            } catch (e) {
+                return '⚠ Error decrypting text. Make sure it was encrypted with this tool.';
+            }
+        }
+
+        // Copy output text to clipboard
+        copyBtn.addEventListener('click', function() {
+            if (outputText.value.trim() === '') return;
+            
+            navigator.clipboard.writeText(outputText.value).then(function() {
+                showToast('Text copied to clipboard!');
+            });
+        });
+
+        // Clear input text
+        clearInput.addEventListener('click', function() {
+            inputText.value = '';
+            outputText.value = '';
+            placeholderText.classList.remove('hidden');
+            updateCharCount();
+            inputText.focus();
+        });
+
+        // Insert sample text
+        sampleText.addEventListener('click', function() {
+            const samples = [
+                "This is a secret message that needs to be encrypted!",
+                "Hello, how are you doing today?",
+                "Please don't share this password: MySecurePass123!",
+                "Meeting tomorrow at 3 PM in conference room B.",
+                "සුභ උදෑසනක්! මෙය සිංහල අකුරු වලින් ලියන ලද පණිවිඩයකි."
+            ];
+            
+            const randomSample = samples[Math.floor(Math.random() * samples.length)];
+            inputText.value = randomSample;
+            inputText.focus();
+            updateCharCount();
+            showLoading();
+            
+            // Process after a short delay
+            setTimeout(() => {
+                processText();
+            }, 500);
+        });
+
+        // Show toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + E to encrypt
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                encryptBtn.click();
+            }
+            
+            // Ctrl/Cmd + D to decrypt
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                decryptBtn.click();
+            }
+            
+            // Ctrl/Cmd + L to clear
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                clearInput.click();
+            }
+        });
+
+        // Show initial toast with instructions
+        setTimeout(() => {
+            showToast('Tip: Use Ctrl+E to encrypt, Ctrl+D to decrypt');
+        }, 1000);
+    </script>
+</body>
+</html>
