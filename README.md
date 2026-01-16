@@ -4,7 +4,7 @@
 **EncryptPro** is a modern, single-page web application for instant text encryption and decryption with real-time processing.  
 It features a clean, minimal interface with **zero scrolling**, delivering a smooth experience across desktop and mobile devices.
 
-![EncryptPro Screenshot](https://via.placeholder.com/800x450/4ECB71/FFFFFF?text=EncryptPro+Encryption+Tool)
+![EncryptPro Screenshot](https://raw.githubusercontent.com/lakshithamadumal/EncryptPro/refs/heads/main/assets/Screenshot.png)
 
 ---
 
